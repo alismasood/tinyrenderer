@@ -7,6 +7,7 @@
 #include "geometry.h"
 #include <chrono>
 #include <thread>
+#include <assert.h>
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
@@ -80,41 +81,74 @@ int main(int argc, char** argv)
 void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color)
 {
 	bool steep = false;
-	if(std::abs(x0-x1) < std::abs(y0-y1)) // if the line is steep, transpose the image
+
+	// Transpose the image, in the case the line is steep (change in y is greater than change in
+	// x). 
+	// At this point, x is really the "long direction" and y is really the "short direction."
+	if(std::abs(x0-x1) < std::abs(y0-y1)) 
 	{
 		std::swap(x0, y0);
 		std::swap(x1, y1);
 		steep = true;
 	} 
-	if (x0 > x1) // make it left-to-right
+	if (x0 > x1) // ensure we draw left to right.
 	{
 		std::swap(x0, x1);
 		std::swap(y0, y1);
 	}
+	// dx is change between poiint0 to point1, automatically positive or zero, given drawing left
+	// to right.
 	int dx = x1 - x0;
+
+	// dy, the change between point0 to point1,  can be negative or positive.
 	int dy = y1 - y0;
+	
+	// derror2 is the amount of "error" (in terms of partial steps in the y direction, that haven't
+	// been taken) multiplied by 2.
+	// There is never a dx error because x will always change my the same or equal amount as y.
+	// (because we transposed).
 	int derror2 = std::abs(dy) * 2;
+
+	// error2 is the accumulated error multipled by 2, so far.
 	int error2 = 0;
 	int y = y0;
+
+	// derror2 and error2 represeent error multiplied by 2 because we normally would increment y,
+	// whenever error is greater than .5 (half a pixel). By multiplying by 2, we avoid floating
+	// point operations.
+	
 	for (int x = x0; x <= x1; ++x)
 	{
-		// Check if drawing in image boundaries
+		// If not drawing in image boundaries, skip this loop.
+		// TODO: this is implemented incorrectly. It should increment x and y appropriately, without
+		// 	drawing a pixel.  It shouldn't just skip the loop entirely, because wel'' end up in an
+		// 	infinite loop.
 		if ( x < 0 || y < 0 || x > width || y > height)
 		{
 			continue;
 		}
+
+		// If transposed, de-transpose before drawing.
 		if (steep)
 		{
-			image.set(y, x, color); // if transposed, de-transpose
+			image.set(y, x, color); 
 		}
 		else
 		{
 			image.set(x, y, color);
 		}
+		
+		// Accumulate error (abs(dy)*2)
 		error2 += derror2;
+		
+		// If accumulated error(abs(dy)*2) is greater than dx (guaranteed to be positive difference
+		// of movement between the first and second point, along the longer axis), then increment
+		// y (along the short movement axis, in the appropriate direction). 
 		if (error2 > dx)
 		{
 			y += (y1 > y0 ? 1 : -1);
+			// Reduce error by 2 * dx (amount of error accumlated is equal to one full dx length,
+			// multipled by 2 (to avoid floating point math)).
 			error2 -= dx * 2;
 		}
 	}
@@ -139,11 +173,14 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 		std::swap(t1, t2);
 		if (t0.y < t1.y) std::swap(t0, t1);
 	}
+	assert(t0.y >= t1.y);
+	assert(t1.y >= t2.y);
 
 	// So, now that t0.y > t1.y > t2.y, we can assume the lines drawn from it, to ther lines will
 	// be the left and right boundaries.
 	// We also know the second vertex is higher than the last vertex, so the line from the second
-	// vertex to the third vertex will be included in the second vertex's "side" for drawing horizontal lines.
+	// vertex to the third vertex will be included in the second vertex's "side" for drawing 
+	// horizontal lines.
 	 
 	
 	// Initialize x,y position for the line1 line, line2 line, and line3 line
