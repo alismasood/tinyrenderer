@@ -8,6 +8,7 @@
 #include <chrono>
 #include <thread>
 #include <assert.h>
+#include <string>
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255, 0,   0,   255);
@@ -34,9 +35,14 @@ int main(int argc, char** argv)
 	Vec2i t1[3] = {Vec2i(180, 50),  Vec2i(150, 1),    Vec2i(70, 180)}; 
 	Vec2i t2[3] = {Vec2i(180, 150), Vec2i(120, 160),  Vec2i(130, 180)};
 	
+
+
 	triangle(t0[0], t0[1], t0[2], image, red);
+	triangle(t0[0], t0[1],			Vec2i(30,190), 	image, white);
+	triangle(t0[0], Vec2i(50,70),	t0[2],			image, green);
 	triangle(t1[0], t1[1], t1[2], image, white);
 	triangle(t2[0], t2[1], t2[2], image, green);
+
 
 	image.flip_vertically();
 	image.write_tga_file("output.tga");
@@ -163,9 +169,16 @@ void line(Vec2i t0, Vec2i t1, TGAImage &image, TGAColor color)
 // triangle function
 void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 {
+	std::cout << "\nDrawing Triangle: ";
+	std::cout << "(" + std::to_string(t0.x) + "," + std::to_string(t0.y) + ")";
+	std::cout << "(" + std::to_string(t1.x) + "," + std::to_string(t1.y) + ")";
+	std::cout << "(" + std::to_string(t2.x) + "," + std::to_string(t2.y) + ")";
+	std::cout << "\n";
+
 	line(t0, t1, image, yellow);
 	line(t1, t2, image, yellow);
 	line(t2, t0, image, yellow);
+
 	// Sort vertices by y-coordinate, descending
 	if (t0.y < t1.y) std::swap(t0, t1);
 	if (t1.y < t2.y)
@@ -175,7 +188,12 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 	}
 	assert(t0.y >= t1.y);
 	assert(t1.y >= t2.y);
-
+	
+	std::cout << "	Sort vertices descending by y: ";
+	std::cout << "(" + std::to_string(t0.x) + "," + std::to_string(t0.y) + ")";
+	std::cout << "(" + std::to_string(t1.x) + "," + std::to_string(t1.y) + ")";
+	std::cout << "(" + std::to_string(t2.x) + "," + std::to_string(t2.y) + ")";
+	std::cout << "\n";
 	// So, now that t0.y > t1.y > t2.y, we can assume the lines drawn from it, to ther lines will
 	// be the left and right boundaries.
 	// We also know the second vertex is higher than the last vertex, so the line from the second
@@ -183,21 +201,32 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 	// horizontal lines.
 	 
 	
-	// Initialize x,y position for the line1 line, line2 line, and line3 line
+	// Initialize x,y position for the line1 line
 	int line1_dx = std::abs(t1.x - t0.x);
 	int line1_dy = std::abs(t1.y - t0.y);
 	int line1_derror2 = std::abs(line1_dx) * 2;
 	int line1_error2 = 0;
 	int line1_x = t0.x;
+	std::cout << "	Line1:";
+	std::cout << "(" + std::to_string(t0.x) + "," + std::to_string(t0.y) + ")";
+	std::cout << "(" + std::to_string(t1.x) + "," + std::to_string(t1.y) + ")";
+	std::cout << "\n";
+	std::cout << "		dx: " + std::to_string(line1_dx) + "\n";
+	std::cout << "		dy: " + std::to_string(line1_dy) + "\n";
+	std::cout << "		derror2: " + std::to_string(line1_derror2) + "\n";
+	std::cout << "		x: " + std::to_string(line1_x) + "\n";
 
+	// Initialize x,y position for the line2 line
 	int line2_dx = std::abs(t2.x - t0.x);
 	int line2_dy = std::abs(t2.y - t0.y);
 	int line2_derror2 = std::abs(line2_dx) * 2;
 	int line2_error2 = 0;
 	int line2_x = t0.x;
 
+
+	// Initialize x,y position for the line3 line
 	int line3_dx = std::abs(t2.x - t1.x);
-	int line3_dy = std::abs(t2.y - t2.x);
+	int line3_dy = std::abs(t2.y - t1.y);
 	int line3_derror2 = std::abs(line3_dx) * 2;
 	int line3_error2 = 0;
 	int line3_x = t1.x;
@@ -208,7 +237,12 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 	// 		update line2 coordinates
 	for(int y = t0.y; y >= t1.y; y--)
 	{
-		
+		std::cout << "	Drawing from ";
+		std::cout << "(" + std::to_string(line1_x) + "," + std::to_string(y) + ")";
+		std::cout << " to ";
+		std::cout << "(" + std::to_string(line2_x) + "," + std::to_string(y) + ")";
+		std::cout << "\n";
+
 		line(line1_x, y, line2_x, y, image, color);
 		
 		//Update line1 x coodinate
@@ -216,7 +250,7 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 		while (line1_error2 > line1_dy)
 		{
 			line1_x += (t1.x > t0.x ? 1 : -1);
-			line1_error2 -= 2 * line1_dx;
+			line1_error2 -= 2 * line1_dy;
 		}
 
 		//Update line2 x coordinate
@@ -224,7 +258,7 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 		while (line2_error2 > line2_dy)
 		{
 			line2_x += (t2.x > t0.x ? 1 : -1);
-			line2_error2 -= 2 * line2_dx;
+			line2_error2 -= 2 * line2_dy;
 		}
 	}
 
@@ -240,15 +274,22 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 		line3_error2 += line3_derror2;
 		while(line3_error2 > line3_dy)
 		{
+			std::cout << "Entering loop: \n";
+			std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
+			std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
+			std::cout << "Entering other loop: \n";
 			line3_x += (t2.x > t1.x ? 1 : -1);
-			line3_error2 -= 2 * line3_dx;
+			line3_error2 -= 2 * line3_dy;
+			std::cout << "Exiting loop: \n";
+			std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
+			std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
 		}
 		//Update line2 x coordinate
 		line2_error2 += line2_derror2; 
 		while(line2_error2 > line2_dy)
 		{
 			line2_x += (t2.x > t0.x ? 1 : -1);
-			line2_error2 -= 2 * line2_dx;
+			line2_error2 -= 2 * line2_dy;
 		}
 
 	}
