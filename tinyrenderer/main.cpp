@@ -245,20 +245,24 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 
 		line(line1_x, y, line2_x, y, image, color);
 		
-		//Update line1 x coodinate
-		line1_error2 += line1_derror2;
-		while (line1_error2 > line1_dy)
+		// X-coordinate update is unnecessary for horizontal line. Protects from infinite loop.
+		if(t0.y != t1.y)
 		{
-			line1_x += (t1.x > t0.x ? 1 : -1);
-			line1_error2 -= 2 * line1_dy;
-		}
+			//Update line1 x coodinate
+			line1_error2 += line1_derror2;
+			while (line1_error2 > line1_dy)
+			{
+				line1_x += (t1.x > t0.x ? 1 : -1);
+				line1_error2 -= 2 * line1_dy;
+			}
 
-		//Update line2 x coordinate
-		line2_error2 += line2_derror2;
-		while (line2_error2 > line2_dy)
-		{
-			line2_x += (t2.x > t0.x ? 1 : -1);
-			line2_error2 -= 2 * line2_dy;
+			//Update line2 x coordinate
+			line2_error2 += line2_derror2;
+			while (line2_error2 > line2_dy)
+			{
+				line2_x += (t2.x > t0.x ? 1 : -1);
+				line2_error2 -= 2 * line2_dy;
+			}
 		}
 	}
 
@@ -270,28 +274,31 @@ void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
 	{
 		line(line3_x, y, line2_x, y, image, color);
 		
-		//Update line3 x coordinate
-		line3_error2 += line3_derror2;
-		while(line3_error2 > line3_dy)
+		// X-coordinate update is unnecessary for horizontal line. Protects from infinite loop.
+		if(t1.y != t2.y)	
 		{
-			std::cout << "Entering loop: \n";
-			std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
-			std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
-			std::cout << "Entering other loop: \n";
-			line3_x += (t2.x > t1.x ? 1 : -1);
-			line3_error2 -= 2 * line3_dy;
-			std::cout << "Exiting loop: \n";
-			std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
-			std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
+			//Update line3 x coordinate
+			line3_error2 += line3_derror2;
+			while(line3_error2 > line3_dy)
+			{
+				std::cout << "Entering loop: \n";
+				std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
+				std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
+				std::cout << "Entering other loop: \n";
+				line3_x += (t2.x > t1.x ? 1 : -1);
+				line3_error2 -= 2 * line3_dy;
+				std::cout << "Exiting loop: \n";
+				std::cout << "	line3_error2: " + std::to_string(line3_error2) + "\n";
+				std::cout << "	line3_dy: " + std::to_string(line3_dy) + "\n";
+			}
+			//Update line2 x coordinate
+			line2_error2 += line2_derror2; 
+			while(line2_error2 > line2_dy)
+			{
+				line2_x += (t2.x > t0.x ? 1 : -1);
+				line2_error2 -= 2 * line2_dy;
+			}
 		}
-		//Update line2 x coordinate
-		line2_error2 += line2_derror2; 
-		while(line2_error2 > line2_dy)
-		{
-			line2_x += (t2.x > t0.x ? 1 : -1);
-			line2_error2 -= 2 * line2_dy;
-		}
-
 	}
 }
 
